@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Créer un compte utilisateur</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(120deg, #74ebd5, #9face6);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .container {
+      width: 1100px;
+      height: 700px;
+      display: flex;
+      border-radius: 12px;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.2);
+      overflow: hidden;
+      background-color: #fff;
+    }
+
+    .left {
+      flex: 1;
+      background: linear-gradient(160deg, #141e30, #2c5282);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 40px;
+    }
+
+    .left img {
+      width: 180px;
+      margin-bottom: 30px;
+    }
+
+    .left p {
+      font-size: 16px;
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    .right {
+      flex: 1.2;
+      padding: 60px 50px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .right h2 {
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 24px;
+      color: #333;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 6px;
+      background-color: #f2f2f2;
+      font-size: 14px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: #4a90e2;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      font-weight: bold;
+      font-size: 15px;
+      cursor: pointer;
+      margin-top: 15px;
+    }
+
+    button:hover {
+      background-color: #357ab8;
+    }
+
+    a {
+      display: block;
+      margin-top: 15px;
+      text-align: center;
+      font-size: 14px;
+      color: #333;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    #message {
+      text-align: center;
+      color: red;
+      margin-top: 10px;
+    }
+
+    @media (max-width: 900px) {
+      .container {
+        flex-direction: column;
+        height: auto;
+        width: 90%;
+      }
+      .left {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="left">
+      <img src="images/imginscrit.png" alt="illustration inscription">
+
+      <p>Bienvenue ! Veuillez remplir ce formulaire pour créer votre compte utilisateur.</p>
+    </div>
+
+    <div class="right">
+      <h2>Créer un compte utilisateur</h2>
+      <form id="registerForm">
+        <input type="text" id="nom" placeholder="Nom" required>
+        <input type="text" id="prenom" placeholder="Prénom" required>
+        <input type="email" id="email" placeholder="Email" required>
+        <input type="password" id="password" placeholder="Mot de passe" required>
+        <input type="text" id="adresse" placeholder="Adresse" required>
+        <input type="text" id="telephone" placeholder="Téléphone" required>
+        <input type="text" id="code_special" placeholder="Code spécial" required>
+        <div id="specialiteField" style="display: none;">
+          <label for="specialite">Spécialité</label>
+          <select id="specialite" name="specialite" required>
+            <option value="">-- Sélectionner une spécialité --</option>
+            <option value="réseau">réseau</option>
+            <option value="matériel">matériel</option>
+            <option value="support logiciel">support logiciel</option>
+            <option value="systèmes">systèmes</option>
+            <option value="périphériques">périphériques</option>
+          </select>
+        </div>
+        
+        <input type="hidden" id="role" value="utilisateur">
+        <button type="submit">Créer le compte</button>
+        
+        <a href="login.html" class="back-link">&larr; Retour à la connexion</a>
+
+        <p id="message"></p>
+        
+      </form>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById("registerForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      const codeSpecial = document.getElementById("code_special").value.trim();
+      let role = "";
+
+      if (codeSpecial === "PERSO2025") {
+        role = "utilisateur";
+      } else if (codeSpecial === "TECH2025") {
+        role = "technicien";
+      } else if (codeSpecial === "ADMIN2025") {
+        role = "admin";
+      } else {
+        document.getElementById("message").textContent = "❌ Code spécial incorrect.";
+        return;
+      }
+
+      // Met à jour le champ caché
+      document.getElementById("role").value = role;
+      const specialite = document.getElementById("specialite").value;
+
+      const data = {
+        nom: document.getElementById("nom").value.trim(),
+        prenom: document.getElementById("prenom").value.trim(),
+        email: document.getElementById("email").value.trim(),
+        motdepasse: document.getElementById("password").value.trim(),
+        adresse: document.getElementById("adresse").value.trim(),
+        telephone: document.getElementById("telephone").value.trim(),
+        code: document.getElementById("code_special").value.trim(),
+        role: document.getElementById("role").value.trim(),
+        specialite: role === "technicien" ? document.getElementById("specialite").value : null
+      };
+
+      try {
+        const response = await fetch("http://localhost:3001/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          alert("✅ Compte créé avec succès !");
+          window.location.href = "login.html";
+        } else {
+          document.getElementById("message").textContent = result.message || "Erreur.";
+        }
+      } catch (err) {
+        document.getElementById("message").textContent = "Erreur de connexion.";
+        console.error(err);
+      }
+    });
+    const codeInput = document.getElementById("code_special");
+    const specialiteField = document.getElementById("specialiteField");
+
+    codeInput.addEventListener("input", () => {
+      if (codeInput.value === "TECH2025") {
+        specialiteField.style.display = "block";
+      } else {
+        specialiteField.style.display = "none";
+      }
+});
+
+  </script>
+</body>
+</html>

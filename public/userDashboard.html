@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Tableau de bord - Utilisateur</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    canvas {
+      max-width: 400px;
+      max-height: 300px;
+      margin: 20px auto;
+      display: block;
+    }
+    .profile-card {
+    display: flex;
+    gap: 30px;
+    padding: 30px;
+    border-radius: 20px;
+    background: linear-gradient(145deg, #ffffff, #f0f0f0);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+    align-items: center;
+    max-width: 1000px;
+    margin: 40px auto;
+    transition: all 0.3s ease-in-out;
+  }
+
+  .profile-card img {
+    width: 170px;
+    height: 170px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 5px solid #4a90e2;
+    box-shadow: 0 6px 20px rgba(74, 144, 226, 0.4);
+    transition: transform 0.3s ease;
+  }
+
+  .profile-card img:hover {
+    transform: scale(1.06);
+  }
+
+  .profile-card input[type="file"] {
+    margin-top: 15px;
+    font-size: 14px;
+    color: #333;
+    cursor: pointer;
+  }
+
+  .profile-details {
+    flex: 1;
+  }
+
+  .profile-details p {
+    font-size: 16px;
+    margin: 12px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #333;
+  }
+
+  .profile-details i {
+    color: #4a90e2;
+    min-width: 22px;
+    font-size: 18px;
+  }
+
+  .profile-details strong {
+    margin-right: 8px;
+    color: #2c3e50;
+  }
+
+  #editProfilBtn {
+    margin-top: 20px;
+    background-color: #4a90e2;
+    color: white;
+    padding: 10px 20px;
+    font-weight: bold;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  #editProfilBtn:hover {
+    background-color: #357ab8;
+  }
+
+  @media screen and (max-width: 768px) {
+    .profile-card {
+      flex-direction: column;
+      text-align: center;
+    }
+    .profile-details {
+      align-items: center;
+    }
+  }
+  .photo-container {
+  position: relative;
+  width: 160px;
+  height: 160px;
+  margin: 0 auto;
+}
+
+.photo-container img {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  border: 4px solid #007bff;
+  object-fit: cover;
+  box-shadow: 0 4px 20px rgba(0, 123, 255, 0.3);
+}
+
+.edit-icon {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  background-color: #007bff;
+  color: white;
+  padding: 6px;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+}
+
+.edit-icon i {
+  font-size: 14px;
+}
+
+#uploadPhoto {
+  display: none;
+}
+/* Style personnalisé pour le champ "autre" */
+.champ-autre {
+  background-color: #fff8dc;
+  border: 2px dashed #f0ad4e;
+  padding: 10px;
+  width: 100%;
+  font-style: italic;
+  font-size: 15px;
+  color: #333;
+  border-radius: 8px;
+  margin-top: 10px;
+  transition: 0.3s ease;
+}
+
+.champ-autre:focus {
+  outline: none;
+  border-color: #e67e22;
+  background-color: #fff3cd;
+}
+
+  </style>
+  
+
+</head>
+<body>
+<script>
+    try {
+      const email = localStorage.getItem("userEmail");
+      const role = localStorage.getItem("role");
+  
+      if (!email || role !== "utilisateur") {
+        window.location.href = "login.html";
+      }
+    } catch (err) {
+      console.error("Erreur de session :", err);
+      window.location.href = "login.html";
+    }
+</script>
+  
+<div class="dashboard-container">
+  <!-- Barre latérale -->
+  <nav class="sidebar">
+    <ul>
+      <li data-target="listeIncidentsSection">Liste des incidents</li>
+      <li data-target="profilSection">Profil</li>
+      <li data-target="statistiquesSection">Mes Statistiques</li>
+      <li data-target="settingsSection">Paramètres</li>
+
+      <li data-target="logout">Déconnexion</li>
+    </ul>
+  </nav>
+ 
+  <!-- Contenu principal -->
+  <div class="main-content">
+    <!-- Section Liste des incidents -->
+    <section id="listeIncidentsSection">
+      <h2>Liste des incidents</h2>
+      <button id="newIncidentBtn">Nouveau Ticket</button>
+      <button id="modifierSelectionBtn" class="btn btn-warning">Modifier Sélection</button>
+      <button id="supprimerSelectionBtn" class="btn btn-danger">Supprimer Sélection</button>   
+
+      <table id="incidentsTable" border="1">
+      <input type="text" id="searchSN" placeholder="🔍 Rechercher par numéro de série..." style="padding: 8px; margin-bottom: 15px; border-radius: 5px; width: 300px; border: 1px solid #ccc;">
+
+        <thead>
+          <tr>
+            <th></th>
+            <th>ID</th>
+            <th>Numéro Ticket</th>
+            <th>SN</th>
+            <th>Type d'incident</th>
+            <th>Utilisateur</th>
+            <th>Description</th>
+            <th>Date Création</th>
+            <th>Email</th>
+            <th>Technicien</th>
+            <th>Nature Résolution</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Rempli par JavaScript -->
+        </tbody>
+      </table>
+    </section>
+    <section id="addIncidentSection" style="display: none;">
+      <h2>Ajouter un Incident</h2>
+      <form id="addIncidentForm">
+        <!-- Numéro de Ticket -->
+        <input type="text" id="numero_ticket" placeholder="Numéro de Ticket" required>
+        <!-- Type d'incident (champ libre) -->
+        <select id="type_incident" required>
+          <option value="">-- Sélectionner un type d'incident --</option>
+          <option value="application">Application</option>
+          <option value="antivirus">Antivirus</option>
+          <option value="caméra">Caméra</option>
+          <option value="clavier">Clavier</option>
+          <option value="connexion">Connexion</option>
+          <option value="dossier">Dossier bloqué</option>
+          <option value="écran">Écran</option>
+          <option value="imprimante">Imprimante</option>
+          <option value="internet">Internet</option>
+          <option value="kit">Kit mains-libres</option>
+          <option value="microphone">Microphone</option>
+          <option value="mise à jour">Mise à jour</option>
+          <option value="navigateur">Navigateur</option>
+          <option value="ordinateur">Ordinateur</option>
+          <option value="périphérique">Périphérique</option>
+          <option value="réseau">Réseau</option>
+          <option value="serveur">Serveur</option>
+          <option value="souris">Souris</option>
+          <option value="système">Système</option>
+          <option value="usb">USB</option>
+          <option value="vpn">VPN</option>
+          <option value="autre">🔧 Autre (à préciser)</option>
+        </select>
+        <p id="specialite_info" class="info-specialite" style="margin-top: 5px; color: #888; font-style: italic;"></p>
+
+        <div id="autreContainer" style="display: none;">
+          <input 
+            type="text" 
+            id="autre_type_incident" 
+            placeholder="✍️ Saisissez ici le type d’incident..." 
+            class="champ-autre"
+          >
+        </div>
+        
+        <!-- Numéro de Série (SN) -->
+       <input type="text" id="sn" placeholder="Numéro de Série (SN)" required>
+      
+        <!-- Description du problème -->
+        <textarea id="description" placeholder="Décrivez le problème rencontré" required></textarea>
+      
+        <!-- Email utilisateur -->
+        <input type="email" id="email" placeholder="Votre Email" required>
+         <input type="hidden" id="utilisateur" name="utilisateur">
+
+      
+       
+      
+        <!-- Lieu concerné -->
+        <input type="text" id="lieu" placeholder="Lieu concerné (ex : Bureau 101)" required>
+        <label for="equipe">Équipe concernée :</label>
+        <select id="equipe" required>
+          <option value="">-- Sélectionner une équipe --</option>
+          <option value="réseau">Équipe Réseau</option>
+          <option value="matériel">Équipe Matériel</option>
+          <option value="support logiciel">Équipe Support Logiciel</option>
+          <option value="systèmes">Équipe Systèmes</option>
+          <option value="périphériques">Équipe Périphériques</option>
+        </select>
+        <!-- Boutons -->
+        <button type="submit">Soumettre</button>
+        <button type="button" id="cancelAddBtn" style="background-color: gray; margin-left: 10px;">Annuler</button>
+      </form>
+      
+    </section>
+    <section id="editIncidentSection" style="display: none;">
+      <h2>Modifier un Incident</h2>
+      <form id="editIncidentForm">
+        <input type="hidden" id="edit_id_incident">
+    
+        <input type="text" id="edit_numero_ticket" placeholder="Numéro Ticket">
+        <input type="text" id="edit_sn" placeholder="Numéro de série">
+        <input type="text" id="edit_type_incident" placeholder="Type d'incident">
+        <input type="text" id="edit_utilisateur" placeholder="Utilisateur">
+        <input type="text" id="edit_description" placeholder="Description">
+        <input type="text" id="edit_date_creation" placeholder="Date de création" readonly>
+
+        <input type="email" id="edit_email" placeholder="Email">
+        <div class="form-group">
+          <label for="editTechnicien">Technicien</label>
+          <select id="editTechnicien" name="technicien" required>
+            <option value="">-- Sélectionner un technicien --</option>
+          </select>
+        </div>
+        <input type="hidden" id="edit_nature_resolution">
+        <input type="hidden" id="edit_status">
+
+        <button type="submit">Enregistrer</button>
+        <button type="button" id="cancelEditBtn" style="background-color: gray; margin-left: 10px;">Annuler</button>
+      </form>
+    </section>
+    
+   
+    <section id="profilSection" style="display: none;">
+      <h2>👤 Mon Profil</h2>
+      <div class="profile-card">
+        <div class="photo-container">
+          <img id="profilImage" src="images/imglogin.png" alt="Photo de profil">
+          <label for="uploadPhoto" class="edit-icon">
+            <i class="fas fa-pencil-alt"></i>
+          </label>
+          <input type="file" id="uploadPhoto" accept="image/*">
+        </div>
+        
+        <div class="profile-details">
+          <p><i class="fas fa-user"></i><strong>Nom :</strong> <span id="profilNom">...</span></p>
+          <p><i class="fas fa-user-tag"></i><strong>Prénom :</strong> <span id="profilPrenom">...</span></p>
+          <p><i class="fas fa-envelope"></i><strong>Email :</strong> <span id="profilEmail">...</span></p>
+          <p><i class="fas fa-phone"></i><strong>Téléphone :</strong> <span id="profilTel">...</span></p>
+          <p><i class="fas fa-map-marker-alt"></i><strong>Adresse :</strong> <span id="profilAdresse">...</span></p>
+          <p><i class="fas fa-user-shield"></i><strong>Rôle :</strong> <span id="profilRole">...</span></p>
+          <button id="editProfilBtn">✏️ Modifier</button>
+        </div>
+      </div>
+
+      <form id="profilEditForm" style="display: none; margin-top: 20px;">
+        <input type="text" id="editNom" placeholder="Nom">
+        <input type="text" id="editPrenom" placeholder="Prénom">
+        <input type="text" id="editTelephone" placeholder="Téléphone">
+        <input type="text" id="editAdresse" placeholder="Adresse">
+        <input type="email" id="editEmail" readonly placeholder="Email">
+        <input type="text" id="editRole" readonly placeholder="Rôle">
+        <button type="submit">Enregistrer</button>
+        <button type="button" id="cancelEditProfil">Annuler</button>
+      </form>
+    </section>
+
+      
+    </section>
+    <section id="statistiquesSection" style="display: none;">
+      <h2>📊 Mes Statistiques</h2>
+      
+      <div class="stat-cards">
+        <div class="stat-card">Total Incidents : <span id="statTotal">...</span></div>
+        <div class="stat-card">Incidents Résolus : <span id="statResolu">...</span></div>
+        <div class="stat-card">Incidents En Cours : <span id="statEnCours">...</span></div>
+        
+      </div>
+    
+      <canvas id="pieChart" width="400" height="250"></canvas>
+      <canvas id="barChart" width="400" height="250" style="margin-top: 30px;"></canvas>
+    </section>
+    
+    
+    
+
+    <!-- SECTION PARAMÈTRES -->
+<section id="settingsSection" style="display: none; padding: 20px">
+  <h2>Paramètres</h2>
+
+  <!-- Changement de mot de passe -->
+ <!-- Formulaire changement de mot de passe -->
+<h3>🔐 Changer le mot de passe</h3>
+<form id="passwordForm">
+  <input type="password" id="ancienMotDePasse" placeholder="Ancien mot de passe" required>
+  <input type="password" id="nouveauMotDePasse" placeholder="Nouveau mot de passe" required>
+  <button type="submit">Mettre à jour</button>
+  <p id="mdpMsg" style="color: red;"></p>
+</form>
+
+
+  <!-- Langue -->
+  <div class="setting-block">
+    <h3>Langue de l'application</h3>
+    <select id="languageSelect">
+      <option value="fr">Français</option>
+      <option value="en">English</option>
+    </select>
+  </div>
+
+  <!-- Notifications -->
+  <div class="setting-block">
+    <h3>Notifications</h3>
+    <label><input type="checkbox" id="notifEmail"> Notifications par email</label><br>
+    <label><input type="checkbox" id="notifSystem"> Notifications système</label>
+  </div>
+
+  <!-- Thème -->
+  <div class="setting-block">
+    <h3>Thème</h3>
+    <label><input type="radio" name="theme" value="light" checked> Mode clair</label><br>
+    <label><input type="radio" name="theme" value="dark"> Mode sombre</label>
+  </div>
+</section>
+
+<style>
+  .setting-block {
+    margin-bottom: 25px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f8f8f8;
+  }
+  .setting-block h3 {
+    margin-bottom: 10px;
+  }
+  .setting-block input, .setting-block select {
+    display: block;
+    margin-bottom: 10px;
+    padding: 8px;
+    width: 100%;
+    max-width: 400px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
+  .setting-block button {
+    padding: 8px 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+</style>
+<script>
+  function changerMotDePasse() {
+    const oldPwd = document.getElementById('oldPassword').value;
+    const newPwd = document.getElementById('newPassword').value;
+    const confirmPwd = document.getElementById('confirmPassword').value;
+
+    if (newPwd !== confirmPwd) {
+      alert("Le nouveau mot de passe ne correspond pas à la confirmation.");
+      return;
+    }
+
+    // Tu peux appeler une API ici pour mettre à jour le mot de passe
+    alert("Mot de passe changé avec succès (simulation)");
+  }
+</script>
+    
+
+
+  </div>
+</div>
+
+<script>
+  
+ 
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const form = document.getElementById("addIncidentForm");
+    const listeSection = document.getElementById("listeIncidentsSection");
+    const addSection = document.getElementById("addIncidentSection");
+  
+    // Bouton "Ajouter un ticket"
+    document.getElementById("newIncidentBtn").addEventListener("click", () => {
+      listeSection.style.display = "none";
+      addSection.style.display = "block";
+    });
+  
+    // Bouton "Annuler"
+    document.getElementById("cancelAddBtn").addEventListener("click", () => {
+      form.reset();
+      addSection.style.display = "none";
+      listeSection.style.display = "block";
+    });
+  
+    // Soumission du formulaire
+    form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const today = new Date().toISOString().slice(0, 19).replace('T', ' '); // ✅ Format avec heure
+    const nomUtilisateur = localStorage.getItem('nom_utilisateur') || "null";
+    const prenomUtilisateur = localStorage.getItem('prenom_utilisateur') || "null";
+    const utilisateurComplet = `${prenomUtilisateur} ${nomUtilisateur}`;
+    const specialite = document.getElementById("equipe").value.trim();
+
+// 1. Appeler le serveur pour récupérer tous les techniciens de cette spécialité
+const resTechs = await fetch(`http://localhost:3001/techniciens/specialite/${specialite}`);
+const techniciens = await resTechs.json();
+
+// 2. Prendre tous les emails
+const technicienEmails = techniciens.map(t => t.email_technicien).join(', ');
+
+// 3. Construire l'objet data
+const data = {
+  numero_ticket: document.getElementById("numero_ticket").value.trim(),
+  sn: document.getElementById("sn").value.trim(),
+  description: document.getElementById("description").value.trim(),
+  email: document.getElementById("email").value.trim(),
+  type_incident: document.getElementById("type_incident").value.trim(),
+  lieu: document.getElementById("lieu").value.trim(),
+  utilisateur: utilisateurComplet,
+  date_creation: today, 
+  technicien: technicienEmails // ⚡ Maintenant ici c'est la liste des techniciens !!
+};
+
+      // Vérification simple
+      if (!data.numero_ticket || !data.description || !data.email || !data.type_incident || !data.lieu) {
+      return alert("⚠️ Tous les champs sont obligatoires !");
+    }
+
+    try {
+      const res = await fetch("http://localhost:3001/incidents", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
+
+      if (res.ok) {
+        alert("✅ Incident soumis !");
+        form.reset();
+        addSection.style.display = "none";
+        listeSection.style.display = "block";
+        loadIncidents(); // Recharge la liste
+      } else {
+        const error = await res.json();
+        alert("❌ Erreur : " + (error.message || "Ajout échoué"));
+      }
+    } catch (err) {
+      console.error("Erreur réseau :", err);
+      alert("❌ Impossible de contacter le serveur.");
+    }
+  });
+});
+</script>
+
+<script>
+  // Empêche l'accès au dashboard sans être connecté
+document.addEventListener("DOMContentLoaded", () => {
+    const isConnected = localStorage.getItem("userEmail") || sessionStorage.getItem("connected");
+    if (!isConnected) {
+      window.location.href = "login.html"; // redirection vers login si non connecté
+    }
+  });
+ 
+  // 🔁 Charger le profil utilisateur connecté
+// ===========================
+async function loadProfil() {
+  const email = localStorage.getItem("userEmail");
+  if (!email) return;
+
+  try {
+    const response = await fetch(`http://localhost:3001/utilisateur/${email}`);
+    const user = await response.json();
+
+    // Affichage dans la page
+    document.getElementById("profilNom").textContent = user.nom_utilisateur;
+    document.getElementById("profilPrenom").textContent = user.prenom_utilisateur;
+    document.getElementById("profilEmail").textContent = user.email_utilisateur;
+
+    document.getElementById("profilTel").textContent = user.telephone;
+    document.getElementById("profilAdresse").textContent = user.adresse;
+    document.getElementById("profilRole").textContent = user.role;
+
+    // Remplir le formulaire de modification
+    document.getElementById("editNom").value = user.nom_utilisateur;
+    document.getElementById("editPrenom").value = user.prenom_utilisateur;
+    document.getElementById("editTelephone").value = user.telephone;
+    document.getElementById("editAdresse").value = user.adresse;
+    document.getElementById("editEmail").value = user.email_utilisateur;
+    document.getElementById("editRole").value = user.role;
+    
+    
+
+  } catch (err) {
+    console.error("Erreur lors du chargement du profil :", err);
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  loadProfil();
+});
+
+// 🖊 Afficher formulaire de modification du profil
+const btnEdit = document.getElementById("editProfilBtn");
+const formEdit = document.getElementById("profilEditForm");
+btnEdit?.addEventListener("click", () => {
+  formEdit.style.display = "block";
+});
+
+// ❌ Annuler modification du profil
+const btnCancel = document.getElementById("cancelEditProfil");
+btnCancel?.addEventListener("click", () => {
+  formEdit.style.display = "none";
+});
+
+// ✅ Soumettre modification du profil
+const email = localStorage.getItem("userEmail");
+
+formEdit?.addEventListener("submit", async (e) => {
+  
+
+  e.preventDefault();
+  const data = {
+    nom_utilisateur: document.getElementById("editNom").value,
+    prenom_utilisateur: document.getElementById("editPrenom").value,
+    telephone: document.getElementById("editTelephone").value,
+    adresse: document.getElementById("editAdresse").value
+  };
+
+  try {
+    const res = await fetch(`http://localhost:3001/utilisateur/${email}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    });
+
+    if (res.ok) {
+      alert("✅ Profil mis à jour !");
+      formEdit.style.display = "none";
+      loadProfil();
+    } else {
+      alert("❌ Erreur mise à jour !");
+    }
+  } catch (err) {
+    console.error("Erreur update profil :", err);
+  }
+});
+
+// Afficher image sélectionnée
+document.getElementById("uploadPhoto").addEventListener("change", function (e) {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function (event) {
+        document.getElementById("profilImage").src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+// Charger au démarrage
+
+
+
+
+  // Empêche le retour arrière (historique)
+  history.pushState(null, null, location.href);
+  window.onpopstate = function () {
+    history.go(1);
+  };
+  document.addEventListener("DOMContentLoaded", () => {
+  const isConnected = localStorage.getItem("userEmail") || sessionStorage.getItem("connected");
+  if (!isConnected) {
+    window.location.href = "login.html"; // redirection vers login si non connecté
+  }
+
+  loadProfil(); // ✅ TRÈS IMPORTANT : appeler ici la fonction
+});
+
+</script>
+
+
+<!-- ✅ Script spécifique à la page Dashboard -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    loadIncidents();
+
+    // Rediriger vers le formulaire d'ajout
+    document.getElementById("newIncidentBtn").addEventListener("click", () => {
+      document.getElementById("listeIncidentsSection").style.display = "none";
+      document.getElementById("addIncidentSection").style.display = "block";
+      
+
+    });
+    // Bouton Annuler pour revenir à la liste
+    document.getElementById("cancelAddBtn").addEventListener("click", () => {
+    document.getElementById("addIncidentSection").style.display = "none";
+    document.getElementById("listeIncidentsSection").style.display = "block";
+  });
+
+
+
+    // ✅ Fonction quand on clique sur "Modifier Sélection"
+ document.getElementById("modifierSelectionBtn").addEventListener("click", async () => {
+  const id = getSelectedId();
+  await chargerTechniciensPourModification();
+
+  if (!id) return alert("Sélectionnez un incident à modifier !");
+  
+  try {
+    const res = await fetch(`http://localhost:3001/incidents/${id}`);
+    const data = await res.json();
+
+    // Remplir les champs du formulaire de modification
+    document.getElementById("edit_id_incident").value = data.id_incident;
+    document.getElementById("edit_numero_ticket").value = data.numero_ticket || "";
+    document.getElementById("edit_sn").value = data.sn || "";
+    document.getElementById("edit_utilisateur").value = data.utilisateur || "";
+    document.getElementById("edit_description").value = data.description || "";
+    document.getElementById("edit_email").value = data.email || "";
+    document.getElementById("editTechnicien").value = data.technicien || "";
+    document.getElementById("edit_type_incident").value = data.type_incident || "";
+    document.getElementById("edit_date_creation").value = data.date_creation 
+  ? new Date(data.date_creation).toLocaleString("fr-FR") 
+  : "";
+
+    // Afficher la section modification
+    document.getElementById("listeIncidentsSection").style.display = "none";
+    document.getElementById("editIncidentSection").style.display = "block";
+
+  } catch (err) {
+    console.error("Erreur récupération incident :", err);
+    alert("Erreur lors du chargement de l’incident.");
+  }
+ });
+ document.getElementById("editIncidentForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const id = document.getElementById("edit_id_incident").value;
+
+  const data = {
+    numero_ticket: document.getElementById("edit_numero_ticket").value,
+    sn: document.getElementById("edit_sn").value,
+    utilisateur: document.getElementById("edit_utilisateur").value,
+    description: document.getElementById("edit_description").value,
+    email: document.getElementById("edit_email").value,
+    technicien: document.getElementById("editTechnicien").value,
+
+    nature_resolution: document.getElementById("edit_nature_resolution").value,
+    status: document.getElementById("edit_status").value,
+  };
+
+  try {
+    const res = await fetch(`http://localhost:3001/incidents/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    });
+
+    if (res.ok) {
+      alert("✅ Incident modifié !");
+      loadIncidents();
+      document.getElementById("editIncidentForm").reset();
+      document.getElementById("editIncidentSection").style.display = "none";
+      document.getElementById("listeIncidentsSection").style.display = "block";
+    } else {
+      alert("❌ Erreur lors de la modification !");
+    }
+  } catch (err) {
+    console.error("Erreur update :", err);
+    alert("❌ Erreur connexion serveur !");
+  }
+});
+document.getElementById("cancelEditBtn").addEventListener("click", () => {
+  document.getElementById("editIncidentForm").reset();
+  document.getElementById("editIncidentSection").style.display = "none";
+  document.getElementById("listeIncidentsSection").style.display = "block";
+});
+
+    function getSelectedId() {
+      const checked = document.querySelector("input[name='selectIncident']:checked");
+      return checked ? checked.value : null;
+    }
+
+
+    document.getElementById("supprimerSelectionBtn").addEventListener("click", async () => {
+    const ids = getSelectedIds();
+    if (ids.length === 0) return alert("Sélectionnez au moins un incident !");
+    if (!confirm("Voulez-vous supprimer les incidents sélectionnés ?")) return;
+
+    try {
+    const response = await fetch("http://localhost:3001/incidents", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ids })  // 🧠 envoie un tableau d'IDs
+    });
+
+    if (response.ok) {
+      alert("✅ Incidents supprimés !");
+      loadIncidents();
+    } else {
+      const result = await response.json();
+      alert("❌ Erreur : " + (result.message || "Suppression échouée."));
+    }
+   } catch (err) {
+    console.error("Erreur suppression :", err);
+    alert("❌ Erreur de connexion au serveur.");
+   }
+    document.querySelector(".sidebar li[data-target='logout']").addEventListener("click", () => {
+    sessionStorage.clear(); // Efface toute la session
+    window.location.replace("login.html"); // Remplace l'historique (empêche retour)
+  });
+ });
+
+});
+
+// ✅ Charger les incidents
+async function loadIncidents() {
+    try {
+        const response = await fetch("http://localhost:3001/incidents");
+        const incidents = await response.json();
+        const tbody = document.querySelector("#incidentsTable tbody");
+        tbody.innerHTML = "";
+
+        incidents.forEach((incident) => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td><input type="checkbox" name="selectIncident" value="${incident.id_incident}"></td>
+                <td>${incident.id_incident}</td>
+                <td>${incident.numero_ticket}</td>
+                <td>${incident.sn}</td>
+                 <td>${incident.type_incident || ""}</td> <!-- Ajouté ici -->
+                <td>${incident.utilisateur}</td>
+                <td>${incident.description}</td>
+                <td>${incident.date_creation ? new Date(incident.date_creation).toLocaleString('fr-FR', {
+                  day: '2-digit', month: '2-digit', year: 'numeric',
+                  hour: '2-digit', minute: '2-digit'
+                }) : ""}</td>
+                <td>${incident.email || ""}</td>
+                <td>${incident.technicien || ""}</td>
+                <td>${incident.nature_resolution || ""}</td>
+                <td>${incident.status || ""}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    } catch (err) {
+        console.error("Erreur chargement incidents :", err);
+    }
+    
+}
+// ✅ Récupérer l’ID coché
+function getSelectedIds() {
+  const checked = document.querySelectorAll("input[name='selectIncident']:checked");
+  return Array.from(checked).map(cb => cb.value);
+}
+document.getElementById("type_incident").addEventListener("change", function () {
+  const champAutre = document.getElementById("autre_type_incident");
+  const container = document.getElementById("autreContainer");
+
+  if (this.value === "autre") {
+    container.style.display = "block";
+    champAutre.required = true;
+  } else {
+    container.style.display = "none";
+    champAutre.required = false;
+    champAutre.value = "";
+  }
+});
+
+
+
+// Navigation dans le menu à gauche
+document.querySelectorAll(".sidebar li").forEach(item => {
+    item.addEventListener("click", () => {
+        const target = item.getAttribute("data-target");
+
+        // Masquer toutes les sections
+        document.querySelectorAll("section").forEach(sec => sec.style.display = "none");
+
+        // Afficher la section ciblée
+        const section = document.getElementById(target);
+        if (section) section.style.display = "block";
+        if (target === "statistiquesSection") {
+        chargerStats(); // ✅ Appel du chargement des stats
+}
+
+    });
+});
+document.querySelector('[data-target="logout"]').addEventListener("click", () => {
+  // Suppression du stockage
+  localStorage.removeItem("userEmail");
+  // Redirection
+  window.location.href = "login.html";
+});
+
+
+
+</script>
+<script>
+  // Vérifie si l'utilisateur est connecté
+ 
+
+  // Bloque le retour arrière même avec bouton retour navigateur
+  window.history.pushState(null, null, window.location.href);
+  window.onpopstate = function () {
+    window.history.go(1);
+  };
+
+  // Ajoute aussi une vérification sur les actions sensibles
+  
+  // ✅ À coller dans ton script.js ou dans un <script> dans userDashboard.html
+
+// Fonction pour charger les statistiques
+async function chargerStats() {
+  try {
+    const res = await fetch("http://localhost:3001/incidents");
+    const incidents = await res.json();
+
+    const total = incidents.length;
+    const resolu = incidents.filter(i => i.status?.toLowerCase() === "fermé").length;
+    const encours = incidents.filter(i => i.status?.toLowerCase() === "en cours").length;
+
+    document.getElementById("statTotal").textContent = total;
+    document.getElementById("statResolu").textContent = resolu;
+    document.getElementById("statEnCours").textContent = encours;
+
+    new Chart(document.getElementById("pieChart"), {
+      type: "pie",
+      data: {
+        labels: ["Résolus", "En cours", "Autres"],
+        datasets: [{
+          data: [resolu, encours, total - resolu - encours],
+        }]
+      }
+    });
+
+  } catch (err) {
+    console.error("Erreur chargement stats", err);
+  }
+}
+document.getElementById("passwordForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const email = localStorage.getItem("userEmail");
+  const ancienMotDePasse = document.getElementById("ancienMotDePasse").value.trim();
+  const nouveauMotDePasse = document.getElementById("nouveauMotDePasse").value.trim();
+
+  try {
+    const res = await fetch("http://localhost:3001/update-password", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, ancienMotDePasse, nouveauMotDePasse }),
+    });
+
+    const result = await res.json();
+    document.getElementById("mdpMsg").style.color = res.ok ? "green" : "red";
+    document.getElementById("mdpMsg").textContent = result.message;
+  } catch (err) {
+    console.error("Erreur changement mot de passe :", err);
+    document.getElementById("mdpMsg").textContent = "Erreur serveur.";
+  }
+});
+
+</script>
+
+<script src="script.js"></script>
+</body>
+</html>

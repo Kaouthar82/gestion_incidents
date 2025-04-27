@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Tableau de bord - Technicien</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+  <div class="dashboard-container">
+    <!-- Barre latérale -->
+    <nav class="sidebar">
+      <ul>
+        <li data-target="listeIncidentsTech">Mes Incidents</li>
+        <li data-target="profilTech">Profil</li>
+        <li data-target="logout">Déconnexion</li>
+      </ul>
+    </nav>
+
+    <!-- Contenu principal -->
+    <div class="main-content">
+
+      <!-- Liste incidents assignés au technicien -->
+      <section id="listeIncidentsTech">
+        <h2>🛠️ Mes Incidents Assignés</h2>
+        <table id="incidentsTableTech" border="1">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Numéro Ticket</th>
+              <th>SN</th>
+              <th>Description</th>
+              <th>Lieu</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="incidentTableBody"></tbody>
+
+        </table>
+      </section>
+
+      <!-- Profil technicien -->
+      <section id="profilTech" style="display: none;">
+        <h2>👤 Mon Profil</h2>
+        <div class="profile-card">
+          <div class="photo-container">
+            <img id="profilImageTech" src="images/imglogin.png" alt="Photo de profil">
+          </div>
+          <div class="profile-details">
+            <p><i class="fas fa-user"></i> <strong>Nom :</strong> <span id="profilNomTech">...</span></p>
+            <p><i class="fas fa-envelope"></i> <strong>Email :</strong> <span id="profilEmailTech">...</span></p>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <script>
+    const email = localStorage.getItem("userEmail");
+    const role = localStorage.getItem("role");
+
+// ✅ Contrôle d'accès pour technicien
+if (!email || role !== "technicien") {
+  window.location.href = "login.html"; // redirection si non connecté ou mauvais rôle
+}
+
+    
+
+    document.addEventListener("DOMContentLoaded", () => {
+      loadIncidentsTech();
+      loadProfilTech();
+    });
+
+    // Charger les incidents du technicien
+    async function loadIncidentsTech() {
+    const emailTech = localStorage.getItem("userEmail"); // 🛠 On récupère l'email du technicien connecté
+
+    try {
+        const response = await fetch(`http://localhost:3001/incidents-par-technicien/${emailTech}`); // 🛠 On charge les incidents liés à son email
+        const incidents = await response.json();
+
+        const tbody = document.querySelector("#incidentsTableTech tbody");
+        tbody.innerHTML = "";
+
+        incidents.forEach(incident => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td>${incident.id_incident}</td>
+                <td>${incident.numero_ticket}</td>
+                <td>${incident.sn}</td>
+                <td>${incident.description}</td>
+                <td>${incident.lieu}</td>
+                <td>${incident.status || "En cours"}</td>
+                <td><button onclick="updateStatus(${incident.id_incident})">Changer statut</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    } catch (err) {
+        console.error("Erreur chargement incidents technicien :", err);
+    }
+}
+
+
+
+    
+    // Charger le profil technicien
+    async function loadProfilTech() {
+      const email = localStorage.getItem("userEmail");
+      try {
+        const res = await fetch(`http://localhost:3001/utilisateur/${email}`);
+        const user = await res.json();
+        document.getElementById("profilNomTech").textContent = user.nom_utilisateur;
+        document.getElementById("profilEmailTech").textContent = user.email_utilisateur;
+      } catch (err) {
+        console.error("Erreur chargement profil technicien :", err);
+      }
+    }
+
+    // Fonction pour changer le statut de l’incident
+  // Fonction pour changer le statut de l’incident (⚠️ envoie toutes les données !)
+async function updateStatus(id) {
+  const nouveauStatus = prompt("Entrez le nouveau statut (ex: En cours, Clôturé) :");
+  if (!nouveauStatus) return;
+
+  try {
+    // 🔁 Charger l'incident complet avant modification
+    const resIncident = await fetch(`http://localhost:3001/incidents/${id}`);
+    const incident = await resIncident.json();
+
+    // ✅ Envoyer tous les champs, avec juste le nouveau status modifié
+    const updatedData = {
+      numero_ticket: incident.numero_ticket,
+      sn: incident.sn,
+      utilisateur: incident.utilisateur,
+      description: incident.description,
+      email: incident.email,
+      technicien: incident.technicien,
+      nature_resolution: incident.nature_resolution || "",
+      status: nouveauStatus
+    };
+
+    const res = await fetch(`http://localhost:3001/incidents/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updatedData)
+    });
+
+    if (res.ok) {
+      alert("✅ Statut mis à jour !");
+      loadIncidentsTech();
+    } else {
+      alert("❌ Erreur mise à jour.");
+    }
+  } catch (err) {
+    console.error("Erreur update status :", err);
+    alert("❌ Erreur serveur.");
+  }
+}
+
+
+    // Déconnexion
+    document.querySelector('[data-target="logout"]').addEventListener("click", () => {
+      localStorage.clear();
+      window.location.href = "login.html";
+    });
+
+    // Changer entre sections
+    document.querySelectorAll(".sidebar li").forEach(item => {
+      item.addEventListener("click", () => {
+        const target = item.getAttribute("data-target");
+
+        document.querySelectorAll("section").forEach(section => {
+          section.style.display = "none";
+        });
+
+        if (target !== "logout") {
+          document.getElementById(target).style.display = "block";
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>

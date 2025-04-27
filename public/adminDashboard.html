@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Tableau de bord - Admin</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+  <div class="dashboard-container">
+    <!-- Sidebar -->
+    <nav class="sidebar">
+      <ul>
+        <li data-target="utilisateurs">👤 Gérer les utilisateurs</li>
+        <li data-target="incidents">🛠️ Gérer les incidents</li>
+        <li data-target="logout">🚪 Déconnexion</li>
+      </ul>
+    </nav>
+
+    <!-- Contenu principal -->
+    <div class="main-content">
+      
+      <!-- Section utilisateurs -->
+      <section id="utilisateurs">
+        <h2>👥 Liste des utilisateurs</h2>
+        <table id="tableUtilisateurs" border="1">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nom</th>
+              <th>Email</th>
+              <th>Rôle</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+
+      <!-- Section incidents -->
+      <section id="incidents" style="display:none;">
+        <h2>📋 Liste des incidents</h2>
+        <table id="tableIncidents" border="1">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Ticket</th>
+              <th>Description</th>
+              <th>Status</th>
+              <th>Utilisateur</th>
+              <th>Technicien</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+
+    </div>
+  </div>
+  <script>
+    const email = localStorage.getItem("userEmail");
+    const role = localStorage.getItem("role");
+  
+    if (!email || role !== "admin") {
+      window.location.href = "login.html"; // redirige si pas admin connecté
+    }
+  </script>
+  
+  
+  <script>
+    // Sécurité : redirige si pas connecté
+   
+
+    document.addEventListener("DOMContentLoaded", () => {
+      loadUtilisateurs();
+      loadIncidents();
+    });
+
+    // 🔄 Sidebar navigation
+    document.querySelectorAll(".sidebar li").forEach(item => {
+      item.addEventListener("click", () => {
+        const target = item.getAttribute("data-target");
+
+        document.querySelectorAll("section").forEach(section => {
+          section.style.display = "none";
+        });
+
+        if (target !== "logout") {
+          document.getElementById(target).style.display = "block";
+        } else {
+          localStorage.clear();
+          window.location.href = "login.html";
+        }
+      });
+    });
+
+    // 📥 Charger les utilisateurs
+    async function loadUtilisateurs() {
+      try {
+        const res = await fetch("http://localhost:3001/utilisateurs");
+        const users = await res.json();
+        const tbody = document.querySelector("#tableUtilisateurs tbody");
+        tbody.innerHTML = "";
+
+        users.forEach(user => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${user.id_utilisateur}</td>
+            <td>${user.nom_utilisateur}</td>
+            <td>${user.email_utilisateur}</td>
+            <td>${user.role}</td>
+            <td><button onclick="deleteUtilisateur(${user.id_utilisateur})">🗑️ Supprimer</button></td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        console.error("Erreur chargement utilisateurs :", err);
+      }
+    }
+
+    // 📥 Charger les incidents
+    async function loadIncidents() {
+      try {
+        const res = await fetch("http://localhost:3001/incidents");
+        const incidents = await res.json();
+        const tbody = document.querySelector("#tableIncidents tbody");
+        tbody.innerHTML = "";
+
+        incidents.forEach(incident => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${incident.id_incident}</td>
+            <td>${incident.numero_ticket}</td>
+            <td>${incident.description}</td>
+            <td>${incident.status}</td>
+            <td>${incident.utilisateur}</td>
+            <td>${incident.technicien || "Non assigné"}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        console.error("Erreur chargement incidents :", err);
+      }
+    }
+
+    // ❌ Supprimer un utilisateur
+    async function deleteUtilisateur(id) {
+      if (!confirm("Confirmer la suppression de l'utilisateur ?")) return;
+
+      try {
+        const res = await fetch(`http://localhost:3001/utilisateur/${id}`, {
+          method: "DELETE"
+        });
+
+        if (res.ok) {
+          alert("Utilisateur supprimé !");
+          loadUtilisateurs();
+        } else {
+          alert("Erreur lors de la suppression.");
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  </script>
+</body>
+</html>
