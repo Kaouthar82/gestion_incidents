@@ -24,16 +24,48 @@
       <!-- Liste incidents assignés au technicien -->
       <section id="listeIncidentsTech">
         <h2>🛠️ Mes Incidents Assignés</h2>
+        <div style="display: flex; align-items: center; gap: 32px; margin-bottom: 16px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <label for="filterStatus" style="font-weight: 600; white-space: nowrap;">Filtrer par statut :</label>
+            <select id="filterStatus" onchange="loadIncidentsTech()" class="custom-select">
+              <option value="tous">Tous</option>
+              <option value="en attente">En attente</option>
+              <option value="en cours">En cours</option>
+              <option value="résolu">Résolu</option>
+              <option value="ouvert">Ouvert</option>
+            </select>
+          </div>
+          <div id="detailsModal" class="modal" style="display: none;">
+            <div class="modal-content">
+              <span class="close" onclick="closeDetailsModal()">&times;</span>
+              <h2>Détails de l'incident</h2>
+              <div id="detailsContent" style="font-size: 14px;"></div>
+            </div>
+          </div>
+          
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-search" style="color: #555; font-size: 16px;"></i>
+            <input type="text" id="searchInput" oninput="loadIncidentsTech()" placeholder="Ex: ticket1, utilisateur..." style="padding: 6px 10px; font-size: 14px; border-radius: 6px; border: 1px solid #ccc;">
+          </div>
+        </div>
+        
+        
+
         <table id="incidentsTableTech" border="1">
           <thead>
             <tr>
               <th>ID</th>
               <th>Numéro Ticket</th>
               <th>SN</th>
+              <th>Type d'incident</th>
+              <th>Utilisateur</th>   
+              <th>Date de création</th>         
               <th>Description</th>
               <th>Lieu</th>
               <th>Status</th>
               <th>Actions</th>
+              <th>Détails</th>
+
             </tr>
           </thead>
           <tbody id="incidentTableBody"></tbody>
@@ -57,6 +89,187 @@
 
     </div>
   </div>
+  <!-- MODALE DE CHANGEMENT DE STATUT -->
+<div id="statusModal" class="modal" style="display: none;">
+  <div class="modal-content">
+    <span class="close" onclick="closeStatusModal()">&times;</span>
+    <h2>Changer le statut de l’incident</h2>
+    <select id="newStatusSelect">
+      <option value="ouvert">Ouvert</option>
+      <option value="en cours">En cours</option>
+      <option value="résolu">Résolu</option>
+    </select>
+    
+    
+    
+    <textarea id="resolutionDescription" placeholder="Ajouter une description de la résolution " rows="4"></textarea>
+    <button onclick="submitStatusChange()">Valider</button>
+  </div>
+</div>
+
+<style>
+  .modal {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  .modal-content {
+    background: #ffffff;
+    padding: 35px 30px;
+    border-radius: 16px;
+    width: 420px;
+    max-width: 90%;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+    animation: slideFade 0.3s ease-out;
+    text-align: left;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  .modal-content h2 {
+    margin-bottom: 18px;
+    color: #34495e;
+    font-size: 22px;
+    font-weight: 600;
+  }
+  .modal-content select,
+  .modal-content textarea {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0 20px;
+    border-radius: 8px;
+    border: 1px solid #dcdde1;
+    font-size: 15px;
+    background-color: #f9f9f9;
+    transition: border-color 0.2s;
+  }
+  .modal-content select:focus,
+  .modal-content textarea:focus {
+    border-color: #3498db;
+    outline: none;
+  }
+  .modal-content button {
+    background: #27ae60;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  .modal-content button:hover {
+    background: #1e8449;
+  }
+  .close {
+    float: right;
+    font-size: 26px;
+    font-weight: bold;
+    color: #aaa;
+    cursor: pointer;
+    margin-top: -10px;
+  }
+  .close:hover {
+    color: #000;
+  }
+  @keyframes slideFade {
+    from {opacity: 0; transform: translateY(-30px);}
+    to {opacity: 1; transform: translateY(0);}
+  }
+  .btn-status-compact {
+  background: #f1f1f1;
+  color: #333;
+  padding: 4px 10px;
+  font-size: 13px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.btn-status-compact:hover {
+  background: #e0e0e0;
+}
+
+td:last-child {
+  text-align: center;
+}
+.status-indicator {
+  display: inline-flex;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 500;
+  color: #444;
+  gap: 8px;
+}
+
+.status-indicator .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.dot-attente {
+  background-color: #dc3545;
+}
+
+.dot-cours {
+  background-color: #ffc107;
+}
+
+.dot-resolu {
+  background-color: #28a745;
+}
+
+.dot-ouvert {
+  background-color: #007bff;
+}
+.custom-select {
+  padding: 6px 10px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background-color: #fff;
+  color: #333;
+  cursor: pointer;
+  transition: border-color 0.3s ease;
+  width: auto;
+  min-width: 140px;
+}
+
+.custom-select:focus {
+  border-color: #433fb5;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(67, 63, 181, 0.15);
+}
+.btn-secondary {
+  background: #f1f1f1;
+  color: #333;
+  padding: 4px 10px;
+  font-size: 13px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.btn-secondary:hover {
+  background: #e0e0e0;
+}
+
+
+  </style>
+  
+
 
   <script>
     const email = localStorage.getItem("userEmail");
@@ -67,8 +280,6 @@ if (!email || role !== "technicien") {
   window.location.href = "login.html"; // redirection si non connecté ou mauvais rôle
 }
 
-    
-
     document.addEventListener("DOMContentLoaded", () => {
       loadIncidentsTech();
       loadProfilTech();
@@ -76,37 +287,78 @@ if (!email || role !== "technicien") {
 
     // Charger les incidents du technicien
     async function loadIncidentsTech() {
-    const emailTech = localStorage.getItem("userEmail"); // 🛠 On récupère l'email du technicien connecté
+  const emailTech = localStorage.getItem("userEmail");
+  const selectedStatus = document.getElementById("filterStatus")?.value || "tous";
+  const searchTerm = document.getElementById("searchInput")?.value.toLowerCase() || "";
 
-    try {
-        const response = await fetch(`http://localhost:3001/incidents-par-technicien/${emailTech}`); // 🛠 On charge les incidents liés à son email
-        const incidents = await response.json();
+  try {
+    const response = await fetch(`http://localhost:3001/incidents-par-technicien/${emailTech}`);
+    const incidents = await response.json();
 
-        const tbody = document.querySelector("#incidentsTableTech tbody");
-        tbody.innerHTML = "";
+    const tbody = document.querySelector("#incidentsTableTech tbody");
+    tbody.innerHTML = "";
 
-        incidents.forEach(incident => {
-            const tr = document.createElement("tr");
-            tr.innerHTML = `
-                <td>${incident.id_incident}</td>
-                <td>${incident.numero_ticket}</td>
-                <td>${incident.sn}</td>
-                <td>${incident.description}</td>
-                <td>${incident.lieu}</td>
-                <td>${incident.status || "En cours"}</td>
-                <td><button onclick="updateStatus(${incident.id_incident})">Changer statut</button></td>
-            `;
-            tbody.appendChild(tr);
-        });
-    } catch (err) {
-        console.error("Erreur chargement incidents technicien :", err);
-    }
+    incidents.forEach(incident => {
+      const status = (incident.status || "en attente").toLowerCase();
+
+      // 🔍 Filtre par statut
+      if (selectedStatus !== "tous" && status !== selectedStatus) return;
+
+      // 🔍 Filtre par texte
+      const searchableFields = [
+        incident.numero_ticket,
+        incident.sn,
+        incident.type_incident,
+        incident.utilisateur,
+        incident.lieu,
+        incident.description
+      ].join(" ").toLowerCase();
+
+      if (!searchableFields.includes(searchTerm)) return;
+
+      const tr = document.createElement("tr");
+const encodedData = encodeURIComponent(JSON.stringify(incident));
+
+tr.innerHTML = `
+  <td>${incident.id_incident}</td>
+  <td>${incident.numero_ticket}</td>
+  <td>${incident.sn}</td>
+  <td>${incident.type_incident || "N/A"}</td>
+  <td>${incident.utilisateur || "N/A"}</td>
+  <td>${incident.date_creation ? new Date(incident.date_creation).toLocaleString() : "N/A"}</td>
+  <td>${incident.description}</td>
+  <td>${incident.lieu}</td>
+  <td>
+    <span class="status-indicator">
+      <span class="dot ${
+        status === "résolu" ? "dot-resolu" :
+        status === "en cours" ? "dot-cours" :
+        status === "ouvert" ? "dot-ouvert" :
+        "dot-attente"
+      }"></span>
+      ${incident.status || "En attente"}
+    </span>
+  </td>
+  <td>
+    <button class="btn-status-compact" onclick="openStatusModal(${incident.id_incident})">
+      <i class="fas fa-pencil-alt"></i> Changer statut
+    </button>
+  </td>
+  <td>
+    <button class="btn-secondary" onclick="openDetailsModal('${encodedData}')">
+  <i class="fas fa-eye"></i> Voir
+</button>
+
+  </td>
+`;
+
+      tbody.appendChild(tr);
+    });
+  } catch (err) {
+    console.error("Erreur chargement incidents technicien :", err);
+  }
 }
-
-
-
-    
-    // Charger le profil technicien
+// Charger le profil technicien
     async function loadProfilTech() {
       const email = localStorage.getItem("userEmail");
       try {
@@ -181,6 +433,66 @@ async function updateStatus(id) {
         }
       });
     });
+
+    let selectedIncidentId = null;
+
+function openStatusModal(id) {
+  selectedIncidentId = id;
+  document.getElementById('statusModal').style.display = 'flex';
+}
+
+
+function closeStatusModal() {
+  selectedIncidentId = null;
+  document.getElementById('statusModal').style.display = 'none';
+}
+
+async function submitStatusChange() {
+  const newStatus = document.getElementById('newStatusSelect').value;
+  const description = document.getElementById('resolutionDescription').value;
+
+  try {
+    const response = await fetch(`http://localhost:3001/incidents/${selectedIncidentId}/update-status`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: newStatus, description_resolution: description })
+    });
+
+    const result = await response.json();
+
+    if (response.ok) {
+      alert("✅ Statut mis à jour avec succès !");
+      location.reload(); // Recharge pour voir la mise à jour
+    } else {
+      alert("❌ Erreur lors de la mise à jour : " + result.message);
+    }
+  } catch (err) {
+    console.error(err);
+    alert("❌ Une erreur est survenue.");
+  }
+
+  closeStatusModal();
+}
+function openDetailsModal(data) {
+  const incident = JSON.parse(decodeURIComponent(data));
+  const html = `
+    <p><strong>Numéro Ticket :</strong> ${incident.numero_ticket}</p>
+    <p><strong>SN :</strong> ${incident.sn}</p>
+    <p><strong>Type :</strong> ${incident.type_incident}</p>
+    <p><strong>Utilisateur :</strong> ${incident.utilisateur}</p>
+    <p><strong>Lieu :</strong> ${incident.lieu}</p>
+    <p><strong>Date :</strong> ${new Date(incident.date_creation).toLocaleString()}</p>
+    <p><strong>Description :</strong> ${incident.description}</p>
+    <p><strong>Statut :</strong> ${incident.status}</p>
+  `;
+  document.getElementById("detailsContent").innerHTML = html;
+  document.getElementById("detailsModal").style.display = "flex";
+}
+
+function closeDetailsModal() {
+  document.getElementById("detailsModal").style.display = "none";
+}
+
   </script>
 
 </body>
