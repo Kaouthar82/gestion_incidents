@@ -295,18 +295,49 @@
     
         <input type="text" id="edit_numero_ticket" placeholder="Numéro Ticket">
         <input type="text" id="edit_sn" placeholder="Numéro de série">
-        <input type="text" id="edit_type_incident" placeholder="Type d'incident">
+        <select id="edit_type_incident" required>
+          <option value="">-- Sélectionner un type d'incident --</option>
+          <option value="application">Application</option>
+          <option value="antivirus">Antivirus</option>
+          <option value="caméra">Caméra</option>
+          <option value="clavier">Clavier</option>
+          <option value="connexion">Connexion</option>
+          <option value="dossier">Dossier bloqué</option>
+          <option value="écran">Écran</option>
+          <option value="imprimante">Imprimante</option>
+          <option value="internet">Internet</option>
+          <option value="kit">Kit mains-libres</option>
+          <option value="microphone">Microphone</option>
+          <option value="mise à jour">Mise à jour</option>
+          <option value="navigateur">Navigateur</option>
+          <option value="ordinateur">Ordinateur</option>
+          <option value="périphérique">Périphérique</option>
+          <option value="réseau">Réseau</option>
+          <option value="serveur">Serveur</option>
+          <option value="souris">Souris</option>
+          <option value="système">Système</option>
+          <option value="usb">USB</option>
+          <option value="vpn">VPN</option>
+          <option value="autre">Autre</option>
+          <p id="edit_specialite_info" style="color: #888; font-style: italic;"></p>
+
+        </select>
+        
         <input type="text" id="edit_utilisateur" placeholder="Utilisateur">
         <input type="text" id="edit_description" placeholder="Description">
         <input type="text" id="edit_date_creation" placeholder="Date de création" readonly>
 
         <input type="email" id="edit_email" placeholder="Email">
         <div class="form-group">
-          <label for="editTechnicien">Technicien</label>
-          <select id="editTechnicien" name="technicien" required>
-            <option value="">-- Sélectionner un technicien --</option>
-          </select>
+          <label for="editTechnicien">Techniciens concernés</label>
+          <input type="text" id="editTechnicien" name="technicien" readonly style="background-color: #f0f0f0; cursor: not-allowed;">
         </div>
+        
+        <div class="form-group">
+          <label for="editEquipe">Équipe Responsable</label>
+          <input type="text" id="editEquipe" name="equipe" readonly style="background-color: #f0f0f0; cursor: not-allowed;">
+        </div>
+        
         <input type="hidden" id="edit_nature_resolution">
         <input type="hidden" id="edit_status">
 
@@ -686,30 +717,65 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     // ✅ Fonction quand on clique sur "Modifier Sélection"
- document.getElementById("modifierSelectionBtn").addEventListener("click", async () => {
-  const id = getSelectedId();
-  await chargerTechniciensPourModification();
+    const specialiteMap = {
+  "application": "support logiciel",
+  "antivirus": "support logiciel",
+  "caméra": "périphériques",
+  "clavier": "matériel",
+  "connexion": "réseau",
+  "dossier": "systèmes",
+  "écran": "matériel",
+  "imprimante": "périphériques",
+  "internet": "réseau",
+  "kit": "périphériques",
+  "microphone": "périphériques",
+  "mise à jour": "support logiciel",
+  "navigateur": "support logiciel",
+  "ordinateur": "matériel",
+  "périphérique": "matériel",
+  "réseau": "réseau",
+  "serveur": "systèmes",
+  "souris": "matériel",
+  "système": "systèmes",
+  "usb": "matériel",
+  "vpn": "réseau"
+};
 
+document.getElementById("modifierSelectionBtn").addEventListener("click", async () => {
+  const id = getSelectedId();
   if (!id) return alert("Sélectionnez un incident à modifier !");
-  
+
   try {
     const res = await fetch(`http://localhost:3001/incidents/${id}`);
     const data = await res.json();
 
-    // Remplir les champs du formulaire de modification
     document.getElementById("edit_id_incident").value = data.id_incident;
     document.getElementById("edit_numero_ticket").value = data.numero_ticket || "";
     document.getElementById("edit_sn").value = data.sn || "";
     document.getElementById("edit_utilisateur").value = data.utilisateur || "";
     document.getElementById("edit_description").value = data.description || "";
     document.getElementById("edit_email").value = data.email || "";
-    document.getElementById("editTechnicien").value = data.technicien || "";
     document.getElementById("edit_type_incident").value = data.type_incident || "";
-    document.getElementById("edit_date_creation").value = data.date_creation 
-  ? new Date(data.date_creation).toLocaleString("fr-FR") 
-  : "";
 
-    // Afficher la section modification
+    // 🔥 Mettre directement l'équipe responsable
+    const selectedType = (data.type_incident || "").toLowerCase();
+    const equipe = specialiteMap[selectedType] || "";
+    document.getElementById("editEquipe").value = equipe;
+    if (equipe) {
+  try {
+    const resTech = await fetch(`http://localhost:3001/techniciens/specialite/${equipe}`);
+    const techniciens = await resTech.json();
+    const emails = techniciens.map(t => t.email_technicien).join(", ");
+    document.getElementById("editTechnicien").value = emails;
+  } catch (techErr) {
+    console.error("Erreur chargement techniciens :", techErr);
+    document.getElementById("editTechnicien").value = "";
+  }
+}
+    document.getElementById("edit_date_creation").value = data.date_creation
+      ? new Date(data.date_creation).toLocaleString("fr-FR")
+      : "";
+
     document.getElementById("listeIncidentsSection").style.display = "none";
     document.getElementById("editIncidentSection").style.display = "block";
 
@@ -717,8 +783,16 @@ document.addEventListener("DOMContentLoaded", () => {
     console.error("Erreur récupération incident :", err);
     alert("Erreur lors du chargement de l’incident.");
   }
- });
- document.getElementById("editIncidentForm").addEventListener("submit", async (e) => {
+});
+
+// 🔥 Quand je change manuellement le type d'incident
+document.getElementById("edit_type_incident").addEventListener("change", function () {
+  const selectedType = this.value.toLowerCase();
+  const equipe = specialiteMap[selectedType] || "";
+  document.getElementById("editEquipe").value = equipe;
+});
+
+document.getElementById("editIncidentForm").addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const id = document.getElementById("edit_id_incident").value;
@@ -730,9 +804,9 @@ document.addEventListener("DOMContentLoaded", () => {
     description: document.getElementById("edit_description").value,
     email: document.getElementById("edit_email").value,
     technicien: document.getElementById("editTechnicien").value,
-
-    nature_resolution: document.getElementById("edit_nature_resolution").value,
-    status: document.getElementById("edit_status").value,
+    nature_resolution: document.getElementById("edit_nature_resolution")?.value || "",
+    status: document.getElementById("edit_status")?.value || "",
+    type_incident: document.getElementById("edit_type_incident").value
   };
 
   try {
@@ -756,17 +830,17 @@ document.addEventListener("DOMContentLoaded", () => {
     alert("❌ Erreur connexion serveur !");
   }
 });
+
 document.getElementById("cancelEditBtn").addEventListener("click", () => {
   document.getElementById("editIncidentForm").reset();
   document.getElementById("editIncidentSection").style.display = "none";
   document.getElementById("listeIncidentsSection").style.display = "block";
 });
 
-    function getSelectedId() {
-      const checked = document.querySelector("input[name='selectIncident']:checked");
-      return checked ? checked.value : null;
-    }
-
+function getSelectedId() {
+  const checked = document.querySelector("input[name='selectIncident']:checked");
+  return checked ? checked.value : null;
+}
 
     document.getElementById("supprimerSelectionBtn").addEventListener("click", async () => {
     const ids = getSelectedIds();
