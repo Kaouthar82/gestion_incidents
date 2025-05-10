@@ -2,187 +2,148 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Créer un compte utilisateur</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Créer un compte</title>
   <style>
     body {
       margin: 0;
-      padding: 0;
       font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(120deg, #74ebd5, #9face6);
+      background: url('images/bacgk.jpg') no-repeat center center fixed;
+      background-size: cover;
       height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
     }
 
-    .container {
-      width: 1100px;
-      height: 700px;
-      display: flex;
-      border-radius: 12px;
-      box-shadow: 0 0 30px rgba(0, 0, 0, 0.2);
-      overflow: hidden;
-      background-color: #fff;
-    }
-
-    .left {
-      flex: 1;
-      background: linear-gradient(160deg, #141e30, #2c5282);
-      color: white;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
+    .register-box {
+      background: rgba(255, 255, 255, 0);
+      border: 1px solid rgba(255, 255, 255, 0.075);
+      backdrop-filter: blur(15px);
       padding: 40px;
+      border-radius: 16px;
+      width: 450px;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.2);
     }
 
-    .left img {
-      width: 180px;
-      margin-bottom: 30px;
-    }
-
-    .left p {
-      font-size: 16px;
+    .register-box h1 {
       text-align: center;
-      line-height: 1.5;
+      color: white;
+      margin-bottom: 20px;
     }
 
-    .right {
-      flex: 1.2;
-      padding: 60px 50px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
-
-    .right h2 {
-      text-align: center;
-      margin-bottom: 30px;
-      font-size: 24px;
-      color: #333;
-    }
-
-    input {
+    .register-box input,
+    .register-box select {
       width: 100%;
       padding: 12px;
-      margin: 10px 0;
+      margin-bottom: 12px;
       border: none;
       border-radius: 6px;
-      background-color: #f2f2f2;
+      background: rgba(255, 255, 255, 0.9);
       font-size: 14px;
     }
 
-    button {
+    .register-box button {
       width: 100%;
       padding: 12px;
-      background-color: #4a90e2;
-      border: none;
-      border-radius: 6px;
+      background: #4a90e2;
       color: white;
       font-weight: bold;
-      font-size: 15px;
+      border: none;
+      border-radius: 6px;
       cursor: pointer;
-      margin-top: 15px;
+      margin-top: 10px;
     }
 
-    button:hover {
-      background-color: #357ab8;
+    .register-box button:hover {
+      background: #357ab8;
     }
 
-    a {
-      display: block;
-      margin-top: 15px;
+    .register-box a {
       text-align: center;
-      font-size: 14px;
-      color: #333;
+      display: block;
+      margin-top: 12px;
+      color: #000000;
+      font-size: 13px;
       text-decoration: none;
     }
 
-    a:hover {
+    .register-box a:hover {
       text-decoration: underline;
     }
 
     #message {
-      text-align: center;
       color: red;
+      text-align: center;
       margin-top: 10px;
     }
+    .title-withh-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 30px;
+}
 
-    @media (max-width: 900px) {
-      .container {
-        flex-direction: column;
-        height: auto;
-        width: 90%;
-      }
-      .left {
-        display: none;
-      }
-    }
+.title-withh-logo .logo {
+  height: 60px;
+  width: 40px;
+  object-fit: contain;
+}
   </style>
 </head>
 <body>
-
-  <div class="container">
-    <div class="left">
-      <img src="images/imginscrit.png" alt="illustration inscription">
-
-      <p>Bienvenue ! Veuillez remplir ce formulaire pour créer votre compte utilisateur.</p>
+  <div class="register-box">
+    <div class="title-withh-logo">
+      <img src="images/LOGO.png" alt="Logo" class="logo">
+      <h1>Créer un compte</h1>
     </div>
+    <form id="registerForm">
+      <input type="text" id="nom" placeholder="Nom" required>
+      <input type="text" id="prenom" placeholder="Prénom" required>
+      <input type="email" id="email" placeholder="Email" required>
+      <input type="password" id="password" placeholder="Mot de passe" required>
+      <input type="text" id="adresse" placeholder="Adresse" required>
+      <input type="text" id="telephone" placeholder="Téléphone" required>
+      <input type="text" id="code_special" placeholder="Code spécial" required>
 
-    <div class="right">
-      <h2>Créer un compte utilisateur</h2>
-      <form id="registerForm">
-        <input type="text" id="nom" placeholder="Nom" required>
-        <input type="text" id="prenom" placeholder="Prénom" required>
-        <input type="email" id="email" placeholder="Email" required>
-        <input type="password" id="password" placeholder="Mot de passe" required>
-        <input type="text" id="adresse" placeholder="Adresse" required>
-        <input type="text" id="telephone" placeholder="Téléphone" required>
-        <input type="text" id="code_special" placeholder="Code spécial" required>
-        <div id="specialiteField" style="display: none;">
-          <label for="specialite">Spécialité</label>
-          <select id="specialite" name="specialite" required>
-            <option value="">-- Sélectionner une spécialité --</option>
-            <option value="réseau">réseau</option>
-            <option value="matériel">matériel</option>
-            <option value="support logiciel">support logiciel</option>
-            <option value="systèmes">systèmes</option>
-            <option value="périphériques">périphériques</option>
-          </select>
-        </div>
-        
-        <input type="hidden" id="role" value="utilisateur">
-        <button type="submit">Créer le compte</button>
-        
-        <a href="login.html" class="back-link">&larr; Retour à la connexion</a>
+      <div id="specialiteField" style="display:none;">
+        <label for="specialite" style="color: white;">Spécialité</label>
+        <select id="specialite" name="specialite">
+          <option value="">-- Sélectionner une spécialité --</option>
+          <option value="réseau">réseau</option>
+          <option value="matériel">matériel</option>
+          <option value="support logiciel">support logiciel</option>
+          <option value="systèmes">systèmes</option>
+          <option value="périphériques">périphériques</option>
+        </select>
+      </div>
 
-        <p id="message"></p>
-        
-      </form>
-    </div>
+      <input type="hidden" id="role" value="utilisateur">
+      <button type="submit">Créer le compte</button>
+      <a href="login.html">&larr; Retour à la connexion</a>
+      <p id="message"></p>
+    </form>
   </div>
 
   <script>
-    document.getElementById("registerForm").addEventListener("submit", async function (e) {
+    const form = document.getElementById("registerForm");
+    const codeInput = document.getElementById("code_special");
+    const specialiteField = document.getElementById("specialiteField");
+
+    form.addEventListener("submit", async function (e) {
       e.preventDefault();
-      const codeSpecial = document.getElementById("code_special").value.trim();
+      const code = codeInput.value.trim();
       let role = "";
 
-      if (codeSpecial === "PERSO2025") {
-        role = "utilisateur";
-      } else if (codeSpecial === "TECH2025") {
-        role = "technicien";
-      } else if (codeSpecial === "ADMIN2025") {
-        role = "admin";
-      } else {
+      if (code === "PERSO2025") role = "utilisateur";
+      else if (code === "TECH2025") role = "technicien";
+      else if (code === "ADMIN2025") role = "admin";
+      else {
         document.getElementById("message").textContent = "❌ Code spécial incorrect.";
         return;
       }
 
-      // Met à jour le champ caché
       document.getElementById("role").value = role;
-      const specialite = document.getElementById("specialite").value;
 
       const data = {
         nom: document.getElementById("nom").value.trim(),
@@ -191,42 +152,33 @@
         motdepasse: document.getElementById("password").value.trim(),
         adresse: document.getElementById("adresse").value.trim(),
         telephone: document.getElementById("telephone").value.trim(),
-        code: document.getElementById("code_special").value.trim(),
-        role: document.getElementById("role").value.trim(),
+        code: code,
+        role: role,
         specialite: role === "technicien" ? document.getElementById("specialite").value : null
       };
 
       try {
-        const response = await fetch("http://localhost:3001/register", {
+        const res = await fetch("http://localhost:3001/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(data)
         });
+        const result = await res.json();
 
-        const result = await response.json();
-
-        if (response.ok) {
-          alert("✅ Compte créé avec succès !");
+        if (res.ok) {
+          alert("✅ Compte créé !");
           window.location.href = "login.html";
         } else {
           document.getElementById("message").textContent = result.message || "Erreur.";
         }
       } catch (err) {
         document.getElementById("message").textContent = "Erreur de connexion.";
-        console.error(err);
       }
     });
-    const codeInput = document.getElementById("code_special");
-    const specialiteField = document.getElementById("specialiteField");
 
     codeInput.addEventListener("input", () => {
-      if (codeInput.value === "TECH2025") {
-        specialiteField.style.display = "block";
-      } else {
-        specialiteField.style.display = "none";
-      }
-});
-
+      specialiteField.style.display = codeInput.value === "TECH2025" ? "block" : "none";
+    });
   </script>
 </body>
 </html>

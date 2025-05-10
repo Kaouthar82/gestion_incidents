@@ -3,261 +3,143 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Connexion Utilisateur</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <div style="position: absolute; top: 20px; right: 30px;">
-    <select id="langSelect" style="
-  background-color: transparent;
-  color: #333;
-  border: 1px solid #ccc;
-  padding: 8px 10px;
-  border-radius: 6px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-  backdrop-filter: blur(8px);
-  cursor: pointer;
-">
-
-      <option value="fr">Français</option>
-      <option value="en">English</option>
-    </select>
-  </div>
-  
-  <div class="container">
-    <div class="left-panel">
-      <img src="images/imglogin7.png" alt="illustration de connexion" />
-      <p>Bienvenue ! Veuillez vous connecter pour continuer</p>
-    </div>
-
-    <div class="right-panel">
-      <form id="loginForm">
-        <h1 id="title">Connexion Utilisateur</h1>
-
-        <input type="text" id="email" placeholder="Email" required>
-
-        <div class="password-field">
-          <input type="password" id="password" placeholder="Mot de passe" required />
-          <span id="togglePassword">👁️</span>
-          <button type="submit">Connexion</button>
-        </div>
-
-       
-
-        <a href="register.html">Créer un compte</a>
-        <a href="#" id="forgotPasswordLink">Mot de passe oublié ?</a>
-
-
-
-       
-
-        <p id="error"></p>
-      </form>
-    </div>
-  </div>
+  <title>Connexion</title>
   <style>
     body {
-  margin: 0;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(135deg, #7f7fd5, #86a8e7, #91eae4);
-  height: 100vh;
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: url('images/bacgk.jpg') no-repeat center center fixed;
+      background-size: cover;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .login-box {
+      background: rgba(255, 255, 255, 0);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(15px);
+      padding: 40px;
+      border-radius: 16px;
+      width: 350px;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.638);
+    }
+
+    .login-box h1 {
+      text-align: center;
+      color: #fff;
+      margin-bottom: 30px;
+    }
+
+    .login-box input {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 20px;
+      border: none;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.9);
+    }
+
+    .login-box button {
+      width: 100%;
+      padding: 12px;
+      background: #31983b;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .login-box button:hover {
+      background: #165f1b;
+    }
+
+    .login-box a {
+      color: #ffffff;
+      font-size: 13px;
+      display: block;
+      text-align: center;
+      margin-top: 12px;
+      text-decoration: none;
+    }
+
+    .login-box a:hover {
+      text-decoration: underline;
+    }
+    .title-with-logo {
   display: flex;
-  justify-content: center;
   align-items: center;
-}
-
-.container {
-  display: flex;
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 15px 40px rgba(0,0,0,0.2);
-  overflow: hidden;
-  width: 800px;
-  max-width: 95%;
-  animation: fadeIn 0.8s ease-in-out;
-}
-
-.left-panel {
-  background: linear-gradient(135deg, #4b6cb7, #182848);
-  color: #fff;
-  width: 50%;
-  padding: 40px 20px;
-  display: flex;
-  flex-direction: column;
   justify-content: center;
-  text-align: center;
+  gap: 15px;
+  margin-bottom: 30px;
 }
 
-.left-panel img {
-  max-width: 100%;
-  height: 180px;
-  margin-bottom: 20px;
-}
-
-.left-panel p {
-  font-size: 16px;
-  line-height: 1.6;
-}
-
-.right-panel {
-  width: 50%;
-  padding: 40px;
-}
-
-form h1 {
-  text-align: center;
-  margin-bottom: 20px;
-  color: #333;
-}
-
-input, select {
-  width: 100%;
-  padding: 12px;
-  margin-bottom: 15px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  background: #f5f5f5;
-}
-
-.password-field {
-  position: relative;
-}
-
-.password-field span {
-  position: absolute;
-  right: 10px;
-  top: 12px;
-  cursor: pointer;
-}
-
-button {
-  width: 100%;
-  padding: 12px;
-  border: none;
-  border-radius: 6px;
-  background-color: #4b6cb7;
-  color: #fff;
-  font-weight: bold;
-  transition: background 0.3s ease;
-}
-
-button:hover {
-  background-color: #3755a0;
-}
-
-a {
-  text-align: center;
-  display: block;
-  margin-top: 10px;
-  text-decoration: none;
-  color: #444;
-  font-size: 14px;
-}
-
-a:hover {
-  text-decoration: underline;
-}
-
-#error {
-  color: red;
-  font-size: 13px;
-  text-align: center;
-}
-#forgotPasswordLink {
-    color: #8a2be2; /* Mauve / Violet */
-    font-size: 13px;
-    margin-top: 5px;
-    display: block;
-    text-align: center;
-    text-decoration: none;
-  }
-
-  #forgotPasswordLink:hover {
-    text-decoration: underline;
-  }
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-20px); }
-  to { opacity: 1; transform: translateY(0); }
+.title-with-logo .logo {
+  height: 60px;
+  width: 40px;
+  object-fit: contain;
 }
 
   </style>
+</head>
+<body>
+  <div class="login-box">
+    <div class="title-with-logo">
+      <img src="images/LOGO.png" alt="Logo" class="logo">
+      <h1>Connexion</h1>
+    </div>
+    
+    <form id="loginForm">
+      <input type="text" id="email" placeholder="Email" required>
+      <input type="password" id="password" placeholder="Mot de passe" required>
+      <button type="submit">Se connecter</button>
+      <a href="#">Mot de passe oublié ?</a>
+      <a href="register.html">Créer un compte</a>
+    </form>
+  </div>
+
   <script>
- document.getElementById("loginForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
+    document.getElementById("loginForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
 
-    const email = document.getElementById("email").value.trim();
-    const motdepasse = document.getElementById("password").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const motdepasse = document.getElementById("password").value.trim();
 
-    try {
-      const response = await fetch("http://localhost:3001/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, motdepasse }),
-    });
+      try {
+        const response = await fetch("http://localhost:3001/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, motdepasse }),
+        });
 
-    const result = await response.json();
+        const result = await response.json();
 
-    if (response.ok) {
-      localStorage.setItem("userEmail", result.email_utilisateur);
-      localStorage.setItem("role", result.role);
-      localStorage.setItem("nom_utilisateur", result.nom_utilisateur);
-      localStorage.setItem("prenom_utilisateur", result.prenom_utilisateur);
-      localStorage.setItem("specialite", result.specialite);
+        if (response.ok) {
+          localStorage.setItem("userEmail", result.email_utilisateur);
+          localStorage.setItem("role", result.role);
+          localStorage.setItem("nom_utilisateur", result.nom_utilisateur);
+          localStorage.setItem("prenom_utilisateur", result.prenom_utilisateur);
+          localStorage.setItem("specialite", result.specialite);
 
+          // Redirection par rôle
+          if (result.role === "utilisateur") {
+            window.location.href = "userDashboard.html";
+          } else if (result.role === "technicien") {
+            window.location.href = "technicienDashboard.html";
+          } else if (result.role === "admin") {
+            window.location.href = "adminDashboard.html";
+          } else {
+            alert("❌ Rôle inconnu.");
+          }
+        } else {
+          alert(result.message || "Email ou mot de passe incorrect.");
+        }
 
-
-
-
-
-
-
-      const role = result.role; // ✅ le rôle vient du backend
-
-      // 🔁 redirection selon le rôle
-      if (role === "utilisateur") {
-        window.location.href = "userDashboard.html";
-      } else if (role === "technicien") {
-        window.location.href = "technicienDashboard.html";
-      
-      } else if (role === "admin") {
-       window.location.href = "adminDashboard.html";
-      } else {
-        alert("❌ Rôle inconnu. Contacte l’admin.");
-      }
-
-    } else {
-      alert(result.message || "Email ou mot de passe incorrect.");
-    }
-
-    } catch (err) {
-      console.error("Erreur de connexion :", err);
-      alert("Erreur lors de la tentative de connexion.");
-    }
-  });
-
-    document.getElementById("togglePassword").addEventListener("click", () => {
-      const passwordInput = document.getElementById("password");
-      passwordInput.type = passwordInput.type === "password" ? "text" : "password";
-    });
-
-    document.getElementById("langSelect").addEventListener("change", (e) => {
-      const lang = e.target.value;
-      if (lang === "en") {
-        document.getElementById("title").textContent = "User Login";
-        document.getElementById("email").placeholder = "Email";
-        document.getElementById("password").placeholder = "Password";
-        document.getElementById("btnLogin").textContent = "Login";
-        document.querySelector("a[href='register.html']").textContent = "Create Account";
-        document.querySelector("a[href='#']").textContent = "Forgot Password?";
-      } else {
-        document.getElementById("title").textContent = "Connexion Utilisateur";
-        document.getElementById("email").placeholder = "Email";
-        document.getElementById("password").placeholder = "Mot de passe";
-        document.getElementById("btnLogin").textContent = "Connexion";
-        document.querySelector("a[href='register.html']").textContent = "Créer un compte";
-        document.querySelector("a[href='#']").textContent = lang === "en" ? "Forgot Password?" : "Mot de passe oublié ?";
-
+      } catch (err) {
+        console.error("Erreur de connexion :", err);
+        alert("Erreur lors de la tentative de connexion.");
       }
     });
   </script>

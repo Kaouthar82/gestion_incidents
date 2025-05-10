@@ -110,7 +110,77 @@ document.addEventListener("DOMContentLoaded", () => {
           : "";
       }
     });
+
   });
+  // 🔵 Fonction pour charger les techniciens selon spécialité (POUR MODIFIER INCIDENT)
+async function chargerTechniciensPourSpecialite(specialite) {
+  const selectTech = document.getElementById("editTechnicien");
+  
+  if (!specialite) {
+    selectTech.innerHTML = '<option value="">-- Sélectionner un technicien --</option>';
+    return;
+  }
+  
+  try {
+    const res = await fetch(`http://localhost:3001/techniciens/specialite/${specialite}`);
+    const techs = await res.json();
+    
+    if (techs.length === 0) {
+      selectTech.innerHTML = '<option value="">Aucun technicien disponible</option>';
+    } else {
+      selectTech.innerHTML = '<option value="">-- Sélectionner un technicien --</option>';
+      techs.forEach(tech => {
+        const option = document.createElement("option");
+        option.value = tech.email_technicien;
+        option.textContent = `${tech.nom_technicien} ${tech.prenom_technicien}`;
+        selectTech.appendChild(option);
+      });
+    }
+  } catch (err) {
+    console.error("Erreur chargement techniciens :", err);
+    selectTech.innerHTML = '<option value="">Erreur de chargement</option>';
+  }
+}
+
+// 🔵 Quand le type incident CHANGE dans formulaire MODIFIER ➔ Afficher spécialité + Charger techniciens
+document.getElementById("edit_type_incident")?.addEventListener("change", async function() {
+  const specialiteMap = {
+    "application": "support logiciel",
+    "antivirus": "support logiciel",
+    "caméra": "périphériques",
+    "clavier": "matériel",
+    "connexion": "réseau",
+    "dossier": "systèmes",
+    "écran": "matériel",
+    "imprimante": "périphériques",
+    "internet": "réseau",
+    "kit": "périphériques",
+    "microphone": "périphériques",
+    "mise à jour": "support logiciel",
+    "navigateur": "support logiciel",
+    "ordinateur": "matériel",
+    "périphérique": "matériel",
+    "réseau": "réseau",
+    "serveur": "systèmes",
+    "souris": "matériel",
+    "système": "systèmes",
+    "usb": "matériel",
+    "vpn": "réseau"
+  };
+  
+  const value = this.value.toLowerCase();
+  const specialite = specialiteMap[value];
+  
+  const infoElement = document.getElementById("edit_specialite_info");
+  if (specialite) {
+    infoElement.textContent = `🔍 Ce type d’incident est généralement pris en charge par un technicien spécialisé en ${specialite}.`;
+    await chargerTechniciensPourSpecialite(specialite);
+  } else {
+    infoElement.textContent = "";
+    document.getElementById("editTechnicien").innerHTML = '<option value="">-- Sélectionner un technicien --</option>';
+  }
+});
+
   document.addEventListener("DOMContentLoaded", () => {
     const typeIncident = document.getElementById("type_incident");
     const champAutre = document.getElementById("autre_type_incident");
@@ -234,5 +304,5 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error("Erreur chargement techniciens :", err);
     }
   }
-          
+  
   
